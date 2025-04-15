@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráfico de Pizza</title>
+</head>
+<body>
+    <h1>Gráfico de Pizza</h1>
+
+    <form method="get" action="/chart">
+        <label for="department">Filtrar por Departamento:</label>
+        <select name="department" id="department">
+            <option value="">Todos</option>
+            {% for department in departments %}
+                <option value="{{ department }}" {% if request.args.get('department') == department %}selected{% endif %}>{{ department }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="title">Filtrar por Título:</label>
+        <select name="title" id="title">
+            <option value="">Todos</option>
+            {% for title in titles %}
+                <option value="{{ title }}" {% if request.args.get('title') == title %}selected{% endif %}>{{ title }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="access">Filtrar por Acesso:</label>
+        <select name="access" id="access">
+            <option value="">Todos</option>
+            {% for access in accesses %}
+                <option value="{{ access }}" {% if request.args.get('access') == access %}selected{% endif %}>{{ access }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit">Filtrar</button>
+    </form>
+
+    {% if chart_path %}
+    <div style="text-align: left;">
+        <img src="{{ chart_path }}" alt="Gráfico de Pizza" style="margin: 0; padding: 0;">
+    </div>
+    {% else %}
+    <p>Por favor, aplique um filtro para visualizar o gráfico.</p>
+    {% endif %}
+    
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload CSV</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            text-align: center;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .button {
+            display: inline-block;
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #add8e6; /* Light blue for initial state */
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            cursor: not-allowed; /* Disabled state */
+            transition: background-color 0.3s ease;
+        }
+
+        .button.enabled {
+            background-color: #007bff; /* Original blue */
+            cursor: pointer;
+        }
+
+        .button.enabled:hover {
+            background-color: #0056b3;
+        }
+
+        .button-secondary {
+            background-color: #6c757d;
+            cursor: pointer; /* Ensure the cursor is a pointer for the secondary button */
+        }
+
+        .button-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .spacer {
+            margin: 20px 0;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .custom-file-upload {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .custom-file-upload:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Agrupador de dados CSV</h1>
+        <p>1. Escolha um arquivo CSV clicando no botão "Escolher arquivo" acima.</p>
+        <p>2. Após selecionar o arquivo, clique no botão "Download" para processar o arquivo e baixar os resultados.</p>
+        <p>3. Para visualizar os gráficos gerados, clique no botão "Ir para o Gráfico".</p>
+        <p>4. Caso tenha dúvidas sobre o formato do arquivo CSV, <a href="/file-format">clique aqui</a> para mais informações.</p>
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <label for="file" class="custom-file-upload">Escolher Arquivo</label>
+            <input type="file" name="file" id="file">
+            <br>
+            <button type="submit" class="button">Download</button>
+        </form>
+        <div class="spacer"></div>
+        <a href="/chart" class="button button-secondary">Ir para o Gráfico</a>
+        <div class="spacer"></div>
+        
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const fileInput = document.querySelector('input[type="file"]');
+            const submitButton = document.querySelector('button[type="submit"]');
+
+            // Initially disable the button
+            submitButton.classList.remove('enabled');
+
+            fileInput.addEventListener('change', function () {
+                if (fileInput.files.length > 0) {
+                    submitButton.classList.add('enabled');
+                    submitButton.disabled = false;
+                } else {
+                    submitButton.classList.remove('enabled');
+                    submitButton.disabled = true;
+                }
+            });
+
+            // Faz o upload automaticamente quando um arquivo é selecionado
+            fileInput.addEventListener('change', async function () {
+                if (fileInput.files.length > 0) {
+                    const selectedFile = fileInput.files[0];
+
+                    // Verifica se o arquivo ainda está disponível antes de enviar
+                    if (!selectedFile) {
+                        alert('O arquivo selecionado não está mais disponível. Por favor, selecione novamente.');
+                        return;
+                    }
+
+                    const formData = new FormData();
+                    formData.append('file', selectedFile);
+
+                    try {
+                        const response = await fetch('/upload', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        if (response.ok) {
+                            alert('Arquivo enviado com sucesso!');
+                            submitButton.disabled = false; // Habilita o botão de envio
+                        } else {
+                            alert('Erro ao enviar o arquivo.');
+                        }
+                    } catch (error) {
+                        alert('Erro ao conectar com o servidor.');
+                    }
+                }
+            });
+
+            // Adiciona evento ao botão de submeter
+            submitButton.addEventListener('click', async function (event) {
+                event.preventDefault(); // Evita o comportamento padrão do botão
+
+                try {
+                    const response = await fetch('/check-file', {
+                        method: 'GET'
+                    });
+
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.style.display = 'none';
+                        a.href = url;
+                        a.download = 'grouped_output.csv';
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        alert('Download iniciado com sucesso!');
+                    } else {
+                        alert('Erro ao verificar o arquivo no servidor.');
+                    }
+                } catch (error) {
+                    alert('Erro ao conectar com o servidor para verificar o arquivo.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scramble CSV</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            text-align: center;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .button {
+            display: inline-block;
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: #0056b3;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .custom-file-upload {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .custom-file-upload:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Scramble CSV</h1>
+        <form action="/scramble" method="post" enctype="multipart/form-data">
+            <label for="file" class="custom-file-upload">Escolher Arquivo</label>
+            <input type="file" name="file" id="file">
+            <br>
+            <button type="submit" class="button">Download</button>
+        </form>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const fileInput = document.querySelector('input[type="file"]');
+            const submitButton = document.querySelector('button[type="submit"]');
+
+            // Initially disable the button
+            submitButton.classList.remove('enabled');
+
+            fileInput.addEventListener('change', async function () {
+                if (fileInput.files.length > 0) {
+                    const selectedFile = fileInput.files[0];
+
+                    // Verifica se o arquivo ainda está disponível antes de enviar
+                    if (!selectedFile) {
+                        alert('O arquivo selecionado não está mais disponível. Por favor, selecione novamente.');
+                        return;
+                    }
+
+                    const formData = new FormData();
+                    formData.append('file', selectedFile);
+
+                    try {
+                        const response = await fetch('/scramble', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        if (response.ok) {
+                            alert('Arquivo enviado e processado com sucesso!');
+                            submitButton.classList.add('enabled');
+                            submitButton.disabled = false; // Habilita o botão de download
+                        } else {
+                            alert('Erro ao processar o arquivo.');
+                        }
+                    } catch (error) {
+                        alert('Erro ao conectar com o servidor.');
+                    }
+                }
+            });
+
+            // Adiciona evento ao botão de download
+            submitButton.addEventListener('click', async function (event) {
+                event.preventDefault(); // Evita o comportamento padrão do botão
+
+                try {
+                    const response = await fetch('/scrambled_output.csv', {
+                        method: 'GET'
+                    });
+
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.style.display = 'none';
+                        a.href = url;
+                        a.download = 'scrambled_output.csv';
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        alert('Download iniciado com sucesso!');
+                    } else {
+                        alert('Erro ao verificar o arquivo no servidor.');
+                    }
+                } catch (error) {
+                    alert('Erro ao conectar com o servidor para verificar o arquivo.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formato do Arquivo CSV</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        ul {
+            line-height: 1.6;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Formato do Arquivo CSV</h1>
+        <p>Para que o arquivo CSV seja processado corretamente, ele deve seguir as especificações abaixo:</p>
+        <ul>
+            <li><strong>Formato:</strong> O arquivo deve estar no formato CSV (Comma-Separated Values).</li>
+            <li><strong>Codificação:</strong> O arquivo deve estar codificado em UTF-8 para evitar problemas com caracteres especiais.</li>
+            <li><strong>Separador:</strong> O separador de valores deve ser uma vírgula (<code>,</code>).</li>
+            <li><strong>Cabeçalho:</strong> O arquivo deve conter as seguintes colunas no cabeçalho:
+                <ul>
+                    <li><code>department</code>: Nome do departamento.</li>
+                    <li><code>title</code>: Título ou cargo.</li>
+                    <li><code>access</code>: Tipo de acesso.</li>
+                    <li><code>count</code>: Quantidade de ocorrências.</li>
+                </ul>
+            </li>
+            <li><strong>Exemplo de Cabeçalho:</strong>
+                <pre>name,department,title,system,access</pre>
+            </li>
+            <li><strong>Exemplo de Linha:</strong>
+                <pre>Jess,Finance,Manager,App01,Full Access</pre>
+            </li>
+            <li><strong>Outros Requisitos:</strong>
+                <ul>
+                    <li>Certifique-se de que não há linhas em branco no arquivo.</li>
+                    <li>Os valores na coluna <code>count</code> devem ser numéricos.</li>
+                </ul>
+            </li>
+        </ul>
+        <p>Se precisar de mais informações ou ajuda, entre em contato com o suporte.</p>
+        <p><a href="/">Voltar para a página inicial</a></p>
+    </div>
+</body>
+</html>
