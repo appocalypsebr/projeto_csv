@@ -5,6 +5,7 @@ import logging
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib
+import numpy as np
 import time
 from matplotlib import rcParams, font_manager
 rcParams['font.family'] = 'DejaVu Sans'
@@ -195,6 +196,9 @@ def generate_chart():
         # Ler o arquivo CSV com o delimitador correto
         df = pd.read_csv('grouped_output.csv', delimiter=',')
 
+        # Normalize column names to lowercase
+        df.columns = df.columns.str.lower()
+
         # Verificar se as colunas necessárias existem
         if 'department' not in df.columns or 'title' not in df.columns or 'count' not in df.columns:
             return {"error": "O arquivo CSV não contém as colunas necessárias (department, title, count)."}, 400
@@ -260,11 +264,51 @@ def scramble():
             # Lê o arquivo CSV
             df = pd.read_csv(file)
 
-            # Embaralha os dados dentro de cada coluna
-            for column in df.columns:
-                df[column] = df[column].sample(frac=1).reset_index(drop=True)
+            # Normalize column names to lowercase
+            df.columns = df.columns.str.lower()
 
-            # Salva o arquivo embaralhado
+            # Validate required columns
+            required_columns = {'name', 'login', 'department', 'title', 'access'}
+            missing_columns = required_columns - set(df.columns.str.lower())
+            if missing_columns:
+                return f'Missing required columns: {missing_columns}', 400
+
+            # Step 1: Scramble Departments
+            grouped = df.groupby(['name', 'login'])
+            departments = df['department'].unique()
+            np.random.shuffle(departments)
+            department_mapping = {name: departments[i % len(departments)] for i, name in enumerate(grouped.groups.keys())}
+
+            for (name, login), group in grouped:
+                # Assign the same department to all rows for the person
+                df.loc[group.index, 'department'] = department_mapping[(name, login)]
+
+            # Step 2: Scramble Titles and Access
+            for (name, login), group in grouped:
+                titles = group['title'].unique()
+                np.random.shuffle(titles)
+                title_mapping = {title: titles[i % len(titles)] for i, title in enumerate(titles)}
+
+                for title in group['title'].unique():
+                    title_rows = group[group['title'] == title]
+                    new_title = title_mapping[title]
+
+                    # Move all rows with the same title and their respective access
+                    destination_rows = df[(df['title'] == new_title) & (df['name'] != name)]
+
+                    # Ensure the lengths of source and destination rows match
+                    if len(title_rows) == len(destination_rows):
+                        df.loc[destination_rows.index, 'access'] = title_rows['access'].values
+                        df.loc[destination_rows.index, 'name'] = name
+                        df.loc[destination_rows.index, 'login'] = login
+                    else:
+                        logging.warning(f"Mismatch in row counts for Title '{title}' between source and destination.")
+                        continue
+
+                    # Update the title for the source rows
+                    df.loc[title_rows.index, 'title'] = new_title
+
+            # Save the scrambled file
             scrambled_path = os.path.join(app.config['UPLOAD_FOLDER'], 'scrambled_output.csv')
             df.to_csv(scrambled_path, index=False)
 
